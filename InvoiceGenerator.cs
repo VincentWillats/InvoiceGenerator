@@ -12,8 +12,6 @@ using GemBox.Spreadsheet;
 using System.Text.RegularExpressions;
 
 
-// Test Branch
-// Test Branch 01
 
 namespace InvoiceGenerator
 {

@@ -72,6 +72,7 @@ namespace InvoiceGenerator
             InitializeComponent();
         }
 
+        // On Form Load
         private void Form1_Load(object sender, EventArgs e)
         {
             // Opens and reads settings file
@@ -99,10 +100,12 @@ namespace InvoiceGenerator
             }
             settingsFile.Close();
 
+            // Reset/Sets Item Box
             resetItemBox();
 
         }
 
+        // Load Template to workbook
         private void loadTemplate()
         {
             try
@@ -119,8 +122,11 @@ namespace InvoiceGenerator
             }
         }
 
+        // On generate click, general .xlsx and .pdf if inputs valid
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
+
+            // Set Invoice details
             paid = cbxPaid.Checked;
             billeeName = txtBillee.Text;
             billeeAddress[0] = txtBilleeAddress01.Text;
@@ -128,10 +134,17 @@ namespace InvoiceGenerator
             billeeAddress[2] = txtBilleeAddress03.Text;
             invoiceDate = dtp1.Value;
 
+            // If inputs are currently valid save the xlsx and pdf then clear items
             if (validItemAmount && validItemPrice && validTotalPrice)
             {
-                //errorProvider1.Dispose();
+                errorProvider1.Dispose();
                 saveFile();
+                resetItemBox();
+                lstJobItems.Clear();
+                txtItemDesc.Clear();
+                txtItemPrice.Clear();
+                txtItemAmount.Clear();
+                txtItemTotalPrice.Clear();
             }
             else
             {
@@ -139,6 +152,7 @@ namespace InvoiceGenerator
             }
         }
 
+        // Adding details into workbook and saving it
         private void saveFile()
         {
             loadTemplate();
@@ -171,6 +185,10 @@ namespace InvoiceGenerator
             {
                 workbook.Worksheets[0].Cells["B32"].Value = "PAID";
             }
+            else
+            {
+                workbook.Worksheets[0].Cells["B32"].Value = "";
+            }
 
             // Job Details
 
@@ -200,6 +218,7 @@ namespace InvoiceGenerator
 
         }
 
+        // Saving workbook as pdf
         private void SaveAsPdf(string saveAsLocation)
         {
             string saveas = (saveAsLocation.Split('x')[0]) + "pdf";
@@ -214,6 +233,7 @@ namespace InvoiceGenerator
             }
         }
 
+        // On Form close save config details
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
@@ -242,17 +262,20 @@ namespace InvoiceGenerator
             }
         }
 
+        // Open Config Form
         private void BtnConfig_Click(object sender, EventArgs e)
         {
             ConfigForm newConfig = new ConfigForm();
             newConfig.ShowDialog();
         }
 
+        // Add Item if valid inputs
         private void btnAdd_Click(object sender, EventArgs e)
         {
 
             bool validPrice = false;
 
+            // Checks all are valid
             if (validItemPrice && validItemAmount && validTotalPrice)
             {
                 validPrice = true;
@@ -260,6 +283,7 @@ namespace InvoiceGenerator
 
             if (validPrice)
             {
+                // Checks no more than 8 items
                 if(lstJobItems.Count < 8)
                 {
                     addItemToList();
@@ -275,7 +299,9 @@ namespace InvoiceGenerator
             }
         }
 
+        // Adds items to lstJobItems and ListBox
         private void addItemToList()
+
         {
             JobItem newItem = new JobItem();
 
@@ -300,21 +326,25 @@ namespace InvoiceGenerator
 
         }
 
+        // When unit price changes
         private void txtItemPrice_TextChanged(object sender, EventArgs e)
         {
             setHoursAndPay("pricePerItem");
         }
 
+        // When unit amount changes
         private void txtQuantOrHours_TextChanged(object sender, EventArgs e)
         {
             setHoursAndPay("itemAmount");
         }
 
+        // When total price changes
         private void txtTotalPrice_TextChanged(object sender, EventArgs e)
         {
             setHoursAndPay("priceOfItemTotal");
         }
 
+        // Called when price changes
         private void setHoursAndPay(string whatBox)
         {            
             if (whatBox == "itemAmount")
@@ -387,12 +417,14 @@ namespace InvoiceGenerator
             }
         }
 
+        // Resets item list box
         private void resetItemBox()
         {
             lbxItems.Items.Clear();
             lbxItems.Items.Add("Description\t\tDate\t\tUnit Price\t\tAmount\tTotal");
         }
 
+        // When description changes
         private void txtItemDesc_TextChanged(object sender, EventArgs e)
         {
             if(txtItemDesc.Text.Length > 22)
@@ -404,6 +436,7 @@ namespace InvoiceGenerator
             }
         }
 
+        // When invoice no changes
         private void txtInvoiceNo_TextChanged(object sender, EventArgs e)
         {
             if (!int.TryParse(txtInvoiceNo.Text, out invoiceNo))
@@ -418,7 +451,9 @@ namespace InvoiceGenerator
             }
         }
 
+        // when address changed
         private void txtBilleeAddress01_TextChanged(object sender, EventArgs e)
+
         {
             if (txtBilleeAddress01.Text.Length > 28)
             {
@@ -429,7 +464,9 @@ namespace InvoiceGenerator
             }
         }
 
+        // when address changed
         private void txtBilleeAddress02_TextChanged(object sender, EventArgs e)
+
         {
             if (txtBilleeAddress02.Text.Length > 28)
             {
@@ -440,7 +477,9 @@ namespace InvoiceGenerator
             }
         }
 
+        // when address changed
         private void txtBilleeAddress03_TextChanged(object sender, EventArgs e)
+
         {
             if (txtBilleeAddress03.Text.Length > 28)
             {
@@ -451,6 +490,7 @@ namespace InvoiceGenerator
             }
         }
 
+        // when address changed
         private void txtBillee_TextChanged(object sender, EventArgs e)
         {
             if (txtBillee.Text.Length > 32)

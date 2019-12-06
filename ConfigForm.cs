@@ -55,8 +55,7 @@ namespace InvoiceGenerator
             txtAddress03.Text = InvoiceGenerator.addressArr[2];
             txtBankBSB.Text = InvoiceGenerator.bankBSB;
             txtBankNo.Text = InvoiceGenerator.bankAccNo;
-            txtInvoiceNo.Text = InvoiceGenerator.invoiceNo.ToString();
-            txtHourlyPay.Text = InvoiceGenerator.hourly.ToString();            
+                        
             txtTemplatePath.Text = InvoiceGenerator.templatePath;
             txtSavePath.Text = InvoiceGenerator.newFilePath;
         }
@@ -76,14 +75,6 @@ namespace InvoiceGenerator
             {
                 errorList.Add("Name Cannot be Empty.");
             }
-            if (txtInvoiceNo.Text.Trim() == "") // If Invoice no. empty
-            {
-                errorList.Add("Invoice No Cannot be Empty.");
-            }
-            if (txtHourlyPay.Text.Trim() == "") // If Hourly empty
-            {
-                errorList.Add("Hourly Cannot be Empty.");
-            }
             if (txtTemplatePath.Text.Trim() == "") // If Template empty
             {
                 errorList.Add("Template Path Cannot be Empty.");
@@ -91,17 +82,7 @@ namespace InvoiceGenerator
             if (txtSavePath.Text.Trim() == "") // If Save path empty
             {
                 errorList.Add("Save Path Cannot be Empty.");
-            }
-            
-            if (!(int.TryParse(txtInvoiceNo.Text, out int num)))
-            {
-                errorList.Add("Invoice Number not Int");
-            }
-            if (!(float.TryParse(txtHourlyPay.Text, out float num1)))
-            {
-                errorList.Add("Hourly Pay not Valid");
-            }
-                       
+            }                       
             if (errorList.Count == 0)
             {
                 return true;
@@ -128,9 +109,7 @@ namespace InvoiceGenerator
             InvoiceGenerator.addressArr[1] = txtAddress02.Text;
             InvoiceGenerator.addressArr[2] = txtAddress03.Text;
             InvoiceGenerator.bankBSB = txtBankBSB.Text;
-            InvoiceGenerator.bankAccNo = txtBankNo.Text;
-            InvoiceGenerator.invoiceNo = int.Parse(txtInvoiceNo.Text);
-            InvoiceGenerator.hourly = float.Parse(txtHourlyPay.Text);            
+            InvoiceGenerator.bankAccNo = txtBankNo.Text;                     
             InvoiceGenerator.templatePath = txtTemplatePath.Text;
             InvoiceGenerator.newFilePath = txtSavePath.Text;
 

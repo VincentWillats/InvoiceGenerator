@@ -17,6 +17,9 @@ namespace InvoiceGenerator
 {
     public partial class InvoiceGenerator : Form
     {
+        // File Paths
+        internal static string templatePath;
+        internal static string newFilePath;
 
         // Personal Details
         internal static string name;
@@ -27,48 +30,58 @@ namespace InvoiceGenerator
         // Personal Bank Details
         internal static string bankBSB;
         internal static string bankAccNo;
-        // Invoice Properties
+
+        // Billee Details
         internal static int invoiceNo;
-        internal static float hourly;
-        internal static bool paid;
-        // File Paths
-        internal static string templatePath;
-        internal static string newFilePath;
-
-
-
-        string venue = "";
-        string venueShort = "";
-        float hours;
-        float pay;
-
-        
-                                 
-
         DateTime invoiceDate;
-        DateTime dateOfWork;
+        internal static bool paid;
+        internal static string billeeName;
+        internal static string[] billeeAddress = new string[3];
 
-        bool validDate = false;
-        bool validHours = false;      
 
-        ExcelFile workbook;   
-        
+        // Item Details
+        internal struct JobItem
+        {
+            internal string itemDestription;
+            internal DateTime dateOfWork;
+            internal float itemPricePerUnit;
+            internal float itemQuant;
+            internal float itemTotalCost;
+        }
+        // List of Items
+        List<JobItem> lstJobItems = new List<JobItem>();
+
+        // Excel document
+        ExcelFile workbook;
+
+        // Entry validation
+        bool validItemPrice = false;
+        bool validItemAmount = false;
+        bool validTotalPrice = false;
+
+
+        // Pay validation
+        float amount;
+        float payPerItem;
+        float payTotal;
+
+
 
         public InvoiceGenerator()
         {
             InitializeComponent();
-        }               
+        }
 
         private void Form1_Load(object sender, EventArgs e)
-        {            
+        {
             // Opens and reads settings file
             StreamReader settingsFile;
             settingsFile = File.OpenText("./settings.txt");
             string strRead;
-            while((strRead = settingsFile.ReadLine()) != null)
+            while ((strRead = settingsFile.ReadLine()) != null)
             {
-                string[] strTempArr = new string[14];
-                strTempArr = strRead.Split(',');
+                string[] strTempArr = new string[11];
+                strTempArr = strRead.Split('|');
                 // Personal Details
                 name = strTempArr[0];
                 ABN = strTempArr[1];
@@ -79,25 +92,17 @@ namespace InvoiceGenerator
                 addressArr[1] = strTempArr[5];
                 addressArr[2] = strTempArr[6];
                 // Bank
-                bankBSB = strTempArr[7]; 
-                bankAccNo = strTempArr[8]; 
-                // Invoice Properties
-                invoiceNo = int.Parse(strTempArr[9]); 
-                hourly = float.Parse(strTempArr[10]);
-                paid = bool.Parse(strTempArr[11]);
-                // File Paths
-                templatePath = strTempArr[12];
-                newFilePath = strTempArr[13]; 
-    }
+                bankBSB = strTempArr[7];
+                bankAccNo = strTempArr[8];
+                templatePath = strTempArr[9];
+                newFilePath = strTempArr[10];
+            }
             settingsFile.Close();
-           
-            // Sets invoice no. text
-            txtInvoiceNo.Text = invoiceNo.ToString();
-            cbxPaid.Checked = paid;
 
-            setVenueAndPaid();
-            
+            resetItemBox();
+
         }
+
         private void loadTemplate()
         {
             try
@@ -113,12 +118,19 @@ namespace InvoiceGenerator
                 MessageBox.Show(ex.Message);
             }
         }
-                     
+
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
-            if (validHours && validDate)
+            paid = cbxPaid.Checked;
+            billeeName = txtBillee.Text;
+            billeeAddress[0] = txtBilleeAddress01.Text;
+            billeeAddress[1] = txtBilleeAddress02.Text;
+            billeeAddress[2] = txtBilleeAddress03.Text;
+            invoiceDate = dtp1.Value;
+
+            if (validItemAmount && validItemPrice && validTotalPrice)
             {
-                errorProvider1.Dispose();                
+                //errorProvider1.Dispose();
                 saveFile();
             }
             else
@@ -131,51 +143,52 @@ namespace InvoiceGenerator
         {
             loadTemplate();
 
-            string newFilePathTotal = newFilePath + "/" + Regex.Replace(name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + venueShort + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
+            string newFilePathTotal = newFilePath + "/" + Regex.Replace(name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + "TEST" + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
 
             // Setting values
 
             // Personal Details
-            workbook.Worksheets[0].Cells["B5"].Value = ABN;
-            workbook.Worksheets[0].Cells["B6"].Value = email;
-            workbook.Worksheets[0].Cells["B7"].Value = contactNo;
-            workbook.Worksheets[0].Cells["B8"].Value = addressArr[0];
-            workbook.Worksheets[0].Cells["B9"].Value = addressArr[1];
-            workbook.Worksheets[0].Cells["B10"].Value = addressArr[2];
-
+            workbook.Worksheets[0].Cells["A4"].Value = ABN;
+            workbook.Worksheets[0].Cells["A6"].Value = email;
+            workbook.Worksheets[0].Cells["A8"].Value = contactNo;
+            workbook.Worksheets[0].Cells["A10"].Value = addressArr[0];
+            workbook.Worksheets[0].Cells["A11"].Value = addressArr[1];
+            workbook.Worksheets[0].Cells["A12"].Value = addressArr[2];
             // Personal Bank Details
-            workbook.Worksheets[0].Cells["B13"].Value = bankBSB;
-            workbook.Worksheets[0].Cells["B14"].Value = bankAccNo;
-
+            workbook.Worksheets[0].Cells["B14"].Value = bankBSB;
+            workbook.Worksheets[0].Cells["B15"].Value = bankAccNo;
 
             // Set Invoice Details
-            workbook.Worksheets[0].Cells["G8"].Value = invoiceNo;           
-            workbook.Worksheets[0].Cells["G10"].Value = venue;                       
-            workbook.Worksheets[0].Cells["G6"].Value = dateOfWork.ToString("dd/MM/yyyy");
-
+            workbook.Worksheets[0].Cells["H4"].Value = invoiceDate.ToString("d");
+            workbook.Worksheets[0].Cells["H6"].Value = invoiceNo;
+            workbook.Worksheets[0].Cells["F9"].Value = billeeName;
+            workbook.Worksheets[0].Cells["F12"].Value = billeeAddress[0];
+            workbook.Worksheets[0].Cells["F13"].Value = billeeAddress[1];
+            workbook.Worksheets[0].Cells["F14"].Value = billeeAddress[2];
+            
             // If paid
             if (paid)
             {
-                workbook.Worksheets[0].Cells["E12"].Value = "PAID";
+                workbook.Worksheets[0].Cells["B32"].Value = "PAID";
             }
 
             // Job Details
 
-            // Set Invoice Location
-            if(venueShort == "JSA")
+            int cell = 21;
+            double totalCost = 0;
+            foreach (JobItem item in lstJobItems)
             {
-                workbook.Worksheets[0].Cells["B21"].Value = "JSA, Miami Beach Prom, WA, 6028";
-                
+                totalCost += item.itemTotalCost;
+                workbook.Worksheets[0].Cells["A"+cell.ToString()].Value = item.itemDestription;
+                workbook.Worksheets[0].Cells["D"+cell.ToString()].Value = item.dateOfWork.ToString("d");
+                workbook.Worksheets[0].Cells["E"+cell.ToString()].Value = item.itemPricePerUnit;
+                workbook.Worksheets[0].Cells["G"+cell.ToString()].Value = item.itemQuant.ToString();
+                workbook.Worksheets[0].Cells["H"+cell.ToString()].Value = item.itemTotalCost;
+                cell += 1;
             }
-            if (venueShort == "SBC")
-            {
-                workbook.Worksheets[0].Cells["B21"].Value = "75 Deanmore Road, 6019, WA";     
-            }
-            workbook.Worksheets[0].Cells["D21"].Value = dateOfWork.ToString("dd/MM/yyyy");
-            workbook.Worksheets[0].Cells["E21"].Value = hourly;
-            workbook.Worksheets[0].Cells["G21"].Value = hours;
-            workbook.Worksheets[0].Cells["H21"].Value = pay;
-            workbook.Worksheets[0].Cells["H29"].Value = pay;
+
+            workbook.Worksheets[0].Cells["H29"].Value = totalCost;
+
 
             invoiceNo += 1;
             txtInvoiceNo.Text = invoiceNo.ToString();
@@ -191,116 +204,13 @@ namespace InvoiceGenerator
         {
             string saveas = (saveAsLocation.Split('x')[0]) + "pdf";
             try
-            {             
+            {
                 ExcelFile ef = ExcelFile.Load(saveAsLocation);
-                ef.Save(saveas);                  
+                ef.Save(saveas);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);            
-            }
-        }   
-
-        private void Dtp1_ValueChanged(object sender, EventArgs e)
-        {
-            setVenueAndPaid();
-        }
-
-        private void setVenueAndPaid()
-        {
-            DateTime pickedDate = dtp1.Value;
-            DayOfWeek day = pickedDate.DayOfWeek;
-            
-
-            if (day == DayOfWeek.Tuesday)
-            {
-                txtVenue.Text = "Joondalup Sports Association";
-                venue = "Joondalup Sports Association";
-                venueShort = "JSA";
-                dateOfWork = pickedDate;
-                invoiceDate = pickedDate;
-                validDate = true;
-            }
-            else if (day == DayOfWeek.Thursday)
-            {
-                txtVenue.Text = "Scarborough Bowling Club";
-                venue = "Scarborough Bowling Club";
-                venueShort = "SBC";
-                dateOfWork = pickedDate;
-                invoiceDate = pickedDate;
-                validDate = true;
-            }
-            else
-            {
-                txtVenue.Text = "No Venue Set for: " + day.ToString();
-                venue = "";
-                validDate = false;
-            }
-            if (cbxPaid.Checked)
-            {
-                paid = true;
-            }
-            else if (!(cbxPaid.Checked))
-            {
-                paid = false;
-            }
-        }
-
-        private void TxtHours_TextChanged(object sender, EventArgs e)
-        {
-            setHoursAndPay("hours");
-            
-        }
-
-        private void TxtPrice_TextChanged(object sender, EventArgs e)
-        {
-            setHoursAndPay("price");
-        }
-
-        private void setHoursAndPay(string whatBox)
-        {
-            if(whatBox == "hours")
-            {
-                if (!float.TryParse(txtHours.Text, out hours))
-                {
-                    errorProvider1.SetError(txtHours, "Invalid Hours");
-                    txtHours.Clear();
-                    txtPrice.Clear();
-                    txtHours.Focus();
-                    validHours = false;
-                }
-                else
-                {
-                    errorProvider1.Dispose();
-                    txtPrice.Text = (hours * hourly).ToString();
-                    validHours = true;
-                }
-            }
-            if(whatBox == "price")
-            {
-                if (!float.TryParse(txtPrice.Text, out pay))
-                {
-                    errorProvider1.SetError(txtPrice, "Invalid Pay");
-                    txtHours.Clear();
-                    txtPrice.Clear();
-                    txtPrice.Focus();
-                    validHours = false;
-                }
-                else
-                {
-                    int tempHours = (int)hours;
-                    txtHours.Text = (pay / hourly).ToString();
-                    if ((((((pay / hourly) * 100) / 25) % 25) % 1) == 0)
-                    {
-                        errorProvider1.Dispose();
-                        validHours = true;                        
-                    }
-                    else 
-                    {                        
-                        errorProvider1.SetError(txtPrice, "Not valid total price");
-                        validHours = false;                        
-                    }
-                }
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -310,19 +220,23 @@ namespace InvoiceGenerator
             {
                 StreamWriter sw = new StreamWriter("./settings.txt");
 
-                                        //Name, ABN, Email, Contact No
-                sw.WriteLine(name + "," + ABN + "," + email + "," + contactNo +
-                                        // Address
-                    "," + addressArr[0] + "," + addressArr[1] + "," + addressArr[2] +
-                                        // Bank BSB, BankAccNo, Invoice No, Hourly Pay, Paid?
-                    "," + bankBSB + "," + bankAccNo + "," + invoiceNo + "," + hourly + "," + paid +
-                                        // Template Path, NewFilePath
-                    "," + templatePath + "," + newFilePath);
-                
+                //Name, ABN, Email, Contact No
+                sw.WriteLine(name + "|" 
+                    + ABN + "|" 
+                    + email + "|" 
+                    + contactNo + "|" 
+                    + addressArr[0] + "|" 
+                    + addressArr[1] + "|" 
+                    + addressArr[2] + "|" 
+                    + bankBSB + "|" 
+                    + bankAccNo + "|"     
+                    + templatePath + "|" 
+                    + newFilePath);
+
 
                 sw.Close();
             }
-           catch(Exception ea)
+            catch (Exception ea)
             {
                 Console.WriteLine("Exception: " + ea.Message);
             }
@@ -334,9 +248,220 @@ namespace InvoiceGenerator
             newConfig.ShowDialog();
         }
 
-        private void CbxPaid_CheckedChanged(object sender, EventArgs e)
+        private void btnAdd_Click(object sender, EventArgs e)
         {
-            setVenueAndPaid();
+
+            bool validPrice = false;
+
+            if (validItemPrice && validItemAmount && validTotalPrice)
+            {
+                validPrice = true;
+            }
+
+            if (validPrice)
+            {
+                if(lstJobItems.Count < 8)
+                {
+                    addItemToList();
+                }
+                else
+                {
+                    errorProvider1.SetError(btnAdd, "Already at Max Items");
+                }
+            }            
+            else
+            {
+                errorProvider1.SetError(btnAdd, "Invalid input");
+            }
+        }
+
+        private void addItemToList()
+        {
+            JobItem newItem = new JobItem();
+
+            newItem.itemDestription = txtItemDesc.Text;        
+            newItem.dateOfWork = dtpItemDate.Value;
+            newItem.itemPricePerUnit = float.Parse(txtItemPrice.Text);
+            newItem.itemQuant = float.Parse(txtItemAmount.Text);
+            newItem.itemTotalCost = float.Parse(txtItemTotalPrice.Text);
+
+            string temp = newItem.itemDestription;
+            int tempInt = 32 - (temp.Length);
+            for(;tempInt > 0; tempInt--)
+            {
+                temp = temp + " ";
+            }
+
+            lbxItems.Items.Add(temp + "\t" + newItem.dateOfWork.ToString("d") + "\t" + newItem.itemPricePerUnit.ToString() + "\t\t" + newItem.itemQuant.ToString() + "\t" + newItem.itemTotalCost.ToString());
+
+            lstJobItems.Add(newItem);
+            
+            MessageBox.Show("Entered");
+
+        }
+
+        private void txtItemPrice_TextChanged(object sender, EventArgs e)
+        {
+            setHoursAndPay("pricePerItem");
+        }
+
+        private void txtQuantOrHours_TextChanged(object sender, EventArgs e)
+        {
+            setHoursAndPay("itemAmount");
+        }
+
+        private void txtTotalPrice_TextChanged(object sender, EventArgs e)
+        {
+            setHoursAndPay("priceOfItemTotal");
+        }
+
+        private void setHoursAndPay(string whatBox)
+        {            
+            if (whatBox == "itemAmount")
+            {
+                if (!float.TryParse(txtItemAmount.Text, out amount))
+                {
+                    errorProvider1.SetError(txtItemAmount, "Invalid Hours");
+                    txtItemAmount.Clear();
+                    txtItemTotalPrice.Clear();
+                    txtItemAmount.Focus();
+                    validItemAmount = false;
+                }
+                else
+                {
+                    if (payPerItem != 0)
+                    {
+                        txtItemTotalPrice.Text = (amount * payPerItem).ToString();
+                    }
+                    errorProvider1.Dispose();                   
+                    validItemAmount = true;
+                }
+            }
+            if (whatBox == "pricePerItem")
+            {
+                if (!float.TryParse(txtItemPrice.Text, out payPerItem))
+                {
+                    errorProvider1.SetError(txtItemPrice, "Invalid Price Per Item");
+                    txtItemPrice.Clear();
+                    txtItemPrice.Focus();
+                    validItemPrice = false;
+                }
+                else
+                {
+                    if(amount != 0)
+                    {
+                        txtItemTotalPrice.Text = (amount * payPerItem).ToString();
+                    }
+                    errorProvider1.Dispose();
+                    validItemPrice = true;
+                }
+            }
+            if (whatBox == "priceOfItemTotal")
+            {
+                if (!float.TryParse(txtItemTotalPrice.Text, out payTotal))
+                {
+                    errorProvider1.SetError(txtItemTotalPrice, "Invalid total price. Can leave blank if per item and total items is filled.");
+                    txtItemTotalPrice.Clear();
+                    txtItemTotalPrice.Focus();
+                    validTotalPrice = false;
+                }
+                else
+                {
+                    if (payPerItem != 0)
+                    {
+                        
+                        float tempNum = (float)Math.Round((payTotal / payPerItem), 2);                        
+                        if ((tempNum % 0.25) == 0)
+                        {
+                            errorProvider1.Dispose();
+                            txtItemAmount.Text = (payTotal / payPerItem).ToString();
+                            validTotalPrice = true;
+                        }
+                        else
+                        {
+                            errorProvider1.SetError(txtItemTotalPrice, "Not valid total price.");
+                            validTotalPrice = false;
+                        }                        
+                    }                  
+                }
+            }
+        }
+
+        private void resetItemBox()
+        {
+            lbxItems.Items.Clear();
+            lbxItems.Items.Add("Description\t\tDate\t\tUnit Price\t\tAmount\tTotal");
+        }
+
+        private void txtItemDesc_TextChanged(object sender, EventArgs e)
+        {
+            if(txtItemDesc.Text.Length > 22)
+            {
+                errorProvider1.SetError(txtItemDesc, "Max 22 Chars");
+                string temp = txtItemDesc.Text;
+                string temp01 = temp.Substring(0, 21);
+                txtItemDesc.Text = temp01;                
+            }
+        }
+
+        private void txtInvoiceNo_TextChanged(object sender, EventArgs e)
+        {
+            if (!int.TryParse(txtInvoiceNo.Text, out invoiceNo))
+            {
+                errorProvider1.SetError(txtInvoiceNo, "Number Only");
+                txtInvoiceNo.Clear();
+                txtInvoiceNo.Focus();
+            }
+            else
+            {
+                errorProvider1.Dispose();
+            }
+        }
+
+        private void txtBilleeAddress01_TextChanged(object sender, EventArgs e)
+        {
+            if (txtBilleeAddress01.Text.Length > 28)
+            {
+                errorProvider1.SetError(txtBilleeAddress01, "Max 28 Chars");
+                string temp = txtBilleeAddress01.Text;
+                string temp01 = temp.Substring(0, 27);
+                txtBilleeAddress01.Text = temp01;
+            }
+        }
+
+        private void txtBilleeAddress02_TextChanged(object sender, EventArgs e)
+        {
+            if (txtBilleeAddress02.Text.Length > 28)
+            {
+                errorProvider1.SetError(txtBilleeAddress02, "Max 28 Chars");
+                string temp = txtBilleeAddress02.Text;
+                string temp01 = temp.Substring(0, 27);
+                txtBilleeAddress02.Text = temp01;
+            }
+        }
+
+        private void txtBilleeAddress03_TextChanged(object sender, EventArgs e)
+        {
+            if (txtBilleeAddress03.Text.Length > 28)
+            {
+                errorProvider1.SetError(txtBilleeAddress03, "Max 28 Chars");
+                string temp = txtBilleeAddress03.Text;
+                string temp01 = temp.Substring(0, 27);
+                txtBilleeAddress03.Text = temp01;
+            }
+        }
+
+        private void txtBillee_TextChanged(object sender, EventArgs e)
+        {
+            if (txtBillee.Text.Length > 32)
+            {
+                errorProvider1.SetError(txtBillee, "Max 32 Chars");
+                string temp = txtBillee.Text;
+                string temp01 = temp.Substring(0, 31);
+                txtBillee.Text = temp01;
+            }
         }
     }
+
+
 }

@@ -1,4 +1,20 @@
-﻿using System;
+﻿/**
+ *  @filename InvoiceGenerator.cs
+ *  @author Vincent Willats - vincentwillats.software@gmail.com
+ *  @created 04/12/2019
+ *  @version 0.2
+ *
+ *  History
+ *   0.2    06/12/2019 - Expanded for general use
+ *          Custom locations, jobs, details, comments added, uploaded to git
+ *   0.1    04/12/2019 - Personal Edition
+ *          Project started, personal edition made
+ *          
+  */
+
+
+
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -48,7 +64,7 @@ namespace InvoiceGenerator
             internal float itemQuant;
             internal float itemTotalCost;
         }
-        // List of Items
+        // List of job items
         List<JobItem> lstJobItems = new List<JobItem>();
 
         // Excel document

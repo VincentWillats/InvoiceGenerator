@@ -6,7 +6,7 @@
  *
  *  History
  *   0.22   04/02/2020
- //*          Fixed settings file, will create if not exists
+ *          Fixed settings file, will create if not exists
  *   0.21   04/02/2020
  *          Updated export filename, added name to cell A1
  *          Removed message box on entry add
@@ -38,7 +38,9 @@ namespace InvoiceGenerator
 {
     public partial class InvoiceGenerator : Form
     {
-        // File Paths
+        internal static Settings settings = new Settings();        
+
+        /** File Paths
         internal static string templatePath;
         internal static string newFilePath;
 
@@ -51,6 +53,7 @@ namespace InvoiceGenerator
         // Personal Bank Details
         internal static string bankBSB;
         internal static string bankAccNo;
+        **/
 
         // Billee Details
         internal static int invoiceNo;
@@ -93,6 +96,7 @@ namespace InvoiceGenerator
             InitializeComponent();
         }
 
+        public object XmlFileManager { get; private set; }
         // On Form Load
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -104,66 +108,10 @@ namespace InvoiceGenerator
 
         private void retriveSettings()
         {
-            // Creates if not existse
-            if (!File.Exists("./settings.txt"))
+            if (File.Exists("settings.xml"))
             {
-                try
-                {
-                    StreamWriter sw = new StreamWriter("./settings.txt");                   
-
-                    //Writes defaults
-                    sw.WriteLine(
-                          "Default Name" + "|"
-                        + "12345678" + "|"
-                        + "Default@default.com" + "|"
-                        + "012345478" + "|"
-                        + "Address01" + "|"
-                        + "Address02" + "|"
-                        + "Address03" + "|"
-                        + "123412" + "|"
-                        + "123412" + "|"
-                        + "./../../template02.xlsx" + "|"
-                        + "./../../Invoices");
-                    sw.Close();
-                }
-                catch (Exception ea)
-                {
-                    Console.WriteLine("Exception: " + ea.Message);
-                }
-            }
-
-            // Opens and reads settings file            
-            try
-            {
-                StreamReader settingsFile = File.OpenText("./settings.txt");
-                string strRead;
-                while ((strRead = settingsFile.ReadLine()) != null)
-                {
-                    string[] strTempArr = new string[11];
-                    strTempArr = strRead.Split('|');
-                    // Personal Details
-                    name = strTempArr[0];
-                    ABN = strTempArr[1];
-                    email = strTempArr[2];
-                    contactNo = strTempArr[3];
-                    // Address
-                    addressArr[0] = strTempArr[4];
-                    addressArr[1] = strTempArr[5];
-                    addressArr[2] = strTempArr[6];
-                    // Bank
-                    bankBSB = strTempArr[7];
-                    bankAccNo = strTempArr[8];
-                    templatePath = strTempArr[9];
-                    newFilePath = strTempArr[10];
-                }
-
-                Directory.CreateDirectory(newFilePath);
-                settingsFile.Close(); // Close settings file
-            }
-            catch (Exception ea)
-            {
-                Console.WriteLine("Exception: " + ea.Message);
-            }
+                settings = XmlManager.XmlSettingsReader("settings.xml");
+            }            
         }
 
         // Load Template to workbook
@@ -176,7 +124,7 @@ namespace InvoiceGenerator
                 SpreadsheetInfo.FreeLimitReached += (sender, e) => e.FreeLimitReachedAction = FreeLimitReachedAction.ContinueAsTrial;
 
                 // Opens the template
-                using (Stream input = File.OpenRead(templatePath))
+                using (Stream input = File.OpenRead(settings.TemplatePath))
                     workbook = ExcelFile.Load(input, LoadOptions.XlsxDefault);
             }
             catch (Exception ex)
@@ -222,21 +170,21 @@ namespace InvoiceGenerator
 
             try
             {
-                string newFilePathTotal = newFilePath + "/" + Regex.Replace(name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
+                string newFilePathTotal = settings.NewFilePath + "/" + Regex.Replace(settings.Name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
 
                 // Setting values
 
                 // Personal Details
-                workbook.Worksheets[0].Cells["A1"].Value = name;
-                workbook.Worksheets[0].Cells["A4"].Value = ABN;
-                workbook.Worksheets[0].Cells["A6"].Value = email;
-                workbook.Worksheets[0].Cells["A8"].Value = contactNo;
-                workbook.Worksheets[0].Cells["A10"].Value = addressArr[0];
-                workbook.Worksheets[0].Cells["A11"].Value = addressArr[1];
-                workbook.Worksheets[0].Cells["A12"].Value = addressArr[2];
+                workbook.Worksheets[0].Cells["A1"].Value = settings.Name;
+                workbook.Worksheets[0].Cells["A4"].Value = settings.ABN;
+                workbook.Worksheets[0].Cells["A6"].Value = settings.Email;
+                workbook.Worksheets[0].Cells["A8"].Value = settings.ContactNo;
+                workbook.Worksheets[0].Cells["A10"].Value = settings.Address01;
+                workbook.Worksheets[0].Cells["A11"].Value = settings.Address02;
+                workbook.Worksheets[0].Cells["A12"].Value = settings.Address03;
                 // Personal Bank Details
-                workbook.Worksheets[0].Cells["B14"].Value = bankBSB;
-                workbook.Worksheets[0].Cells["B15"].Value = bankAccNo;
+                workbook.Worksheets[0].Cells["B14"].Value = settings.BankBSB;
+                workbook.Worksheets[0].Cells["B15"].Value = settings.BankAccNo;
 
                 // Set Invoice Details
                 workbook.Worksheets[0].Cells["H4"].Value = invoiceDate.ToString("d");
@@ -306,32 +254,9 @@ namespace InvoiceGenerator
         // On Form close save config details
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
-            {
-                StreamWriter sw = new StreamWriter("./settings.txt");
-
-                //Name, ABN, Email, Contact No
-                sw.WriteLine(
-                      name + "|" 
-                    + ABN + "|" 
-                    + email + "|" 
-                    + contactNo + "|" 
-                    + addressArr[0] + "|" 
-                    + addressArr[1] + "|" 
-                    + addressArr[2] + "|" 
-                    + bankBSB + "|" 
-                    + bankAccNo + "|"     
-                    + templatePath + "|" 
-                    + newFilePath);
-
-
-                sw.Close();
-            }
-            catch (Exception ea)
-            {
-                Console.WriteLine("Exception: " + ea.Message);
-            }
+        
         }
+        
 
         // Open Config Form
         private void BtnConfig_Click(object sender, EventArgs e)

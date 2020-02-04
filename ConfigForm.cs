@@ -46,18 +46,18 @@ namespace InvoiceGenerator
 
         private void ConfigForm_Load(object sender, EventArgs e)
         {
-            txtFullName.Text = InvoiceGenerator.name;
-            txtABN.Text = InvoiceGenerator.ABN;
-            txtEmail.Text = InvoiceGenerator.email;
-            txtContactNumber.Text = InvoiceGenerator.contactNo;
-            txtAddress01.Text = InvoiceGenerator.addressArr[0];
-            txtAddress02.Text = InvoiceGenerator.addressArr[1];
-            txtAddress03.Text = InvoiceGenerator.addressArr[2];
-            txtBankBSB.Text = InvoiceGenerator.bankBSB;
-            txtBankNo.Text = InvoiceGenerator.bankAccNo;
+            txtFullName.Text = InvoiceGenerator.settings.Name;
+            txtABN.Text = InvoiceGenerator.settings.ABN;
+            txtEmail.Text = InvoiceGenerator.settings.Email;
+            txtContactNumber.Text = InvoiceGenerator.settings.ContactNo;
+            txtAddress01.Text = InvoiceGenerator.settings.Address01;
+            txtAddress02.Text = InvoiceGenerator.settings.Address02;
+            txtAddress03.Text = InvoiceGenerator.settings.Address03;
+            txtBankBSB.Text = InvoiceGenerator.settings.BankBSB;
+            txtBankNo.Text = InvoiceGenerator.settings.BankAccNo;
                         
-            txtTemplatePath.Text = InvoiceGenerator.templatePath;
-            txtSavePath.Text = InvoiceGenerator.newFilePath;
+            txtTemplatePath.Text = InvoiceGenerator.settings.TemplatePath;
+            txtSavePath.Text = InvoiceGenerator.settings.NewFilePath;
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
@@ -101,19 +101,30 @@ namespace InvoiceGenerator
 
         private void saveDetails()
         {
-            InvoiceGenerator.name = txtFullName.Text;
-            InvoiceGenerator.ABN = txtABN.Text;
-            InvoiceGenerator.email = txtEmail.Text;
-            InvoiceGenerator.contactNo = txtContactNumber.Text;
-            InvoiceGenerator.addressArr[0] = txtAddress01.Text;
-            InvoiceGenerator.addressArr[1] = txtAddress02.Text;
-            InvoiceGenerator.addressArr[2] = txtAddress03.Text;
-            InvoiceGenerator.bankBSB = txtBankBSB.Text;
-            InvoiceGenerator.bankAccNo = txtBankNo.Text;                     
-            InvoiceGenerator.templatePath = txtTemplatePath.Text;
-            InvoiceGenerator.newFilePath = txtSavePath.Text;
 
-            MessageBox.Show("Save Successful");
+            try
+            {
+                InvoiceGenerator.settings.Name = txtFullName.Text;
+                InvoiceGenerator.settings.ABN = txtABN.Text;
+                InvoiceGenerator.settings.Email = txtEmail.Text;
+                InvoiceGenerator.settings.ContactNo = txtContactNumber.Text;
+                InvoiceGenerator.settings.Address01 = txtAddress01.Text;
+                InvoiceGenerator.settings.Address02 = txtAddress02.Text;
+                InvoiceGenerator.settings.Address03 = txtAddress03.Text;
+                InvoiceGenerator.settings.BankBSB = txtBankBSB.Text;
+                InvoiceGenerator.settings.BankAccNo = txtBankNo.Text;
+                InvoiceGenerator.settings.TemplatePath = txtTemplatePath.Text;
+                InvoiceGenerator.settings.NewFilePath = txtSavePath.Text;
+
+                XmlManager.xmlDataWriter(InvoiceGenerator.settings, "settings.xml");
+                MessageBox.Show("Save Successful");
+            }
+            catch(Exception ea)
+            {
+                MessageBox.Show("Error " + ea.ToString());
+            }
+
+            
         }
 
         private void BtnClose_Click(object sender, EventArgs e)

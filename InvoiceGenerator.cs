@@ -109,7 +109,7 @@ namespace InvoiceGenerator
             {
                 try
                 {
-                    StreamWriter sw = new StreamWriter("./settings.txt");
+                    StreamWriter sw = new StreamWriter("./settings.txt");                   
 
                     //Writes defaults
                     sw.WriteLine(
@@ -156,6 +156,8 @@ namespace InvoiceGenerator
                     templatePath = strTempArr[9];
                     newFilePath = strTempArr[10];
                 }
+
+                Directory.CreateDirectory(newFilePath);
                 settingsFile.Close(); // Close settings file
             }
             catch (Exception ea)
@@ -218,65 +220,71 @@ namespace InvoiceGenerator
         {
             loadTemplate();
 
-            string newFilePathTotal = newFilePath + "/" + Regex.Replace(name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
-
-            // Setting values
-
-            // Personal Details
-            workbook.Worksheets[0].Cells["A1"].Value = name;
-            workbook.Worksheets[0].Cells["A4"].Value = ABN;
-            workbook.Worksheets[0].Cells["A6"].Value = email;
-            workbook.Worksheets[0].Cells["A8"].Value = contactNo;
-            workbook.Worksheets[0].Cells["A10"].Value = addressArr[0];
-            workbook.Worksheets[0].Cells["A11"].Value = addressArr[1];
-            workbook.Worksheets[0].Cells["A12"].Value = addressArr[2];
-            // Personal Bank Details
-            workbook.Worksheets[0].Cells["B14"].Value = bankBSB;
-            workbook.Worksheets[0].Cells["B15"].Value = bankAccNo;
-
-            // Set Invoice Details
-            workbook.Worksheets[0].Cells["H4"].Value = invoiceDate.ToString("d");
-            workbook.Worksheets[0].Cells["H6"].Value = invoiceNo;
-            workbook.Worksheets[0].Cells["F9"].Value = billeeName;
-            workbook.Worksheets[0].Cells["F12"].Value = billeeAddress[0];
-            workbook.Worksheets[0].Cells["F13"].Value = billeeAddress[1];
-            workbook.Worksheets[0].Cells["F14"].Value = billeeAddress[2];
-            
-            // If paid
-            if (paid)
+            try
             {
-                workbook.Worksheets[0].Cells["B32"].Value = "PAID";
+                string newFilePathTotal = newFilePath + "/" + Regex.Replace(name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
+
+                // Setting values
+
+                // Personal Details
+                workbook.Worksheets[0].Cells["A1"].Value = name;
+                workbook.Worksheets[0].Cells["A4"].Value = ABN;
+                workbook.Worksheets[0].Cells["A6"].Value = email;
+                workbook.Worksheets[0].Cells["A8"].Value = contactNo;
+                workbook.Worksheets[0].Cells["A10"].Value = addressArr[0];
+                workbook.Worksheets[0].Cells["A11"].Value = addressArr[1];
+                workbook.Worksheets[0].Cells["A12"].Value = addressArr[2];
+                // Personal Bank Details
+                workbook.Worksheets[0].Cells["B14"].Value = bankBSB;
+                workbook.Worksheets[0].Cells["B15"].Value = bankAccNo;
+
+                // Set Invoice Details
+                workbook.Worksheets[0].Cells["H4"].Value = invoiceDate.ToString("d");
+                workbook.Worksheets[0].Cells["H6"].Value = invoiceNo;
+                workbook.Worksheets[0].Cells["F9"].Value = billeeName;
+                workbook.Worksheets[0].Cells["F12"].Value = billeeAddress[0];
+                workbook.Worksheets[0].Cells["F13"].Value = billeeAddress[1];
+                workbook.Worksheets[0].Cells["F14"].Value = billeeAddress[2];
+
+                // If paid
+                if (paid)
+                {
+                    workbook.Worksheets[0].Cells["B32"].Value = "PAID";
+                }
+                else
+                {
+                    workbook.Worksheets[0].Cells["B32"].Value = "";
+                }
+
+                // Job Details
+
+                int cell = 21;
+                double totalCost = 0;
+                foreach (JobItem item in lstJobItems)
+                {
+                    totalCost += item.itemTotalCost;
+                    workbook.Worksheets[0].Cells["A" + cell.ToString()].Value = item.itemDestription;
+                    workbook.Worksheets[0].Cells["D" + cell.ToString()].Value = item.dateOfWork.ToString("d");
+                    workbook.Worksheets[0].Cells["E" + cell.ToString()].Value = item.itemPricePerUnit;
+                    workbook.Worksheets[0].Cells["G" + cell.ToString()].Value = item.itemQuant.ToString();
+                    workbook.Worksheets[0].Cells["H" + cell.ToString()].Value = item.itemTotalCost;
+                    cell += 1;
+                }
+
+                workbook.Worksheets[0].Cells["H29"].Value = totalCost;
+
+
+                invoiceNo += 1;
+                txtInvoiceNo.Text = invoiceNo.ToString();
+
+                using (FileStream output = File.Create(newFilePathTotal))
+                    workbook.Save(output, SaveOptions.XlsxDefault);
+                SaveAsPdf(newFilePathTotal);
             }
-            else
+            catch (Exception ex)
             {
-                workbook.Worksheets[0].Cells["B32"].Value = "";
-            }
-
-            // Job Details
-
-            int cell = 21;
-            double totalCost = 0;
-            foreach (JobItem item in lstJobItems)
-            {
-                totalCost += item.itemTotalCost;
-                workbook.Worksheets[0].Cells["A"+cell.ToString()].Value = item.itemDestription;
-                workbook.Worksheets[0].Cells["D"+cell.ToString()].Value = item.dateOfWork.ToString("d");
-                workbook.Worksheets[0].Cells["E"+cell.ToString()].Value = item.itemPricePerUnit;
-                workbook.Worksheets[0].Cells["G"+cell.ToString()].Value = item.itemQuant.ToString();
-                workbook.Worksheets[0].Cells["H"+cell.ToString()].Value = item.itemTotalCost;
-                cell += 1;
-            }
-
-            workbook.Worksheets[0].Cells["H29"].Value = totalCost;
-
-
-            invoiceNo += 1;
-            txtInvoiceNo.Text = invoiceNo.ToString();
-
-            using (FileStream output = File.Create(newFilePathTotal))
-                workbook.Save(output, SaveOptions.XlsxDefault);
-            SaveAsPdf(newFilePathTotal);
-
+                MessageBox.Show(ex.Message);
+            }        
 
         }
 

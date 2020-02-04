@@ -2,9 +2,13 @@
  *  @filename InvoiceGenerator.cs
  *  @author Vincent Willats - vincentwillats.software@gmail.com
  *  @created 04/12/2019
- *  @version 0.2
+ *  @version 0.21
  *
  *  History
+ *   0.21   04/02/2020
+ *          Updated export filename, added name to cell A1
+ *          Removed message box on entry add
+ *          Added remove item button and function
  *   0.2    06/12/2019 - Expanded for general use
  *          Custom locations, jobs, details, comments added, uploaded to git
  *   0.1    04/12/2019 - Personal Edition
@@ -114,7 +118,7 @@ namespace InvoiceGenerator
                 templatePath = strTempArr[9];
                 newFilePath = strTempArr[10];
             }
-            settingsFile.Close();
+            settingsFile.Close(); // Close settings file
 
             // Reset/Sets Item Box
             resetItemBox();
@@ -126,9 +130,11 @@ namespace InvoiceGenerator
         {
             try
             {
+                // Sets license to free limited, max 150 rows
                 SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
                 SpreadsheetInfo.FreeLimitReached += (sender, e) => e.FreeLimitReachedAction = FreeLimitReachedAction.ContinueAsTrial;
 
+                // Opens the template
                 using (Stream input = File.OpenRead(templatePath))
                     workbook = ExcelFile.Load(input, LoadOptions.XlsxDefault);
             }
@@ -138,7 +144,7 @@ namespace InvoiceGenerator
             }
         }
 
-        // On generate click, general .xlsx and .pdf if inputs valid
+        // On generate click, generate the .xlsx and .pdf if inputs valid
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
 
@@ -173,11 +179,12 @@ namespace InvoiceGenerator
         {
             loadTemplate();
 
-            string newFilePathTotal = newFilePath + "/" + Regex.Replace(name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + "TEST" + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
+            string newFilePathTotal = newFilePath + "/" + Regex.Replace(name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
 
             // Setting values
 
             // Personal Details
+            workbook.Worksheets[0].Cells["A1"].Value = name;
             workbook.Worksheets[0].Cells["A4"].Value = ABN;
             workbook.Worksheets[0].Cells["A6"].Value = email;
             workbook.Worksheets[0].Cells["A8"].Value = contactNo;
@@ -257,7 +264,8 @@ namespace InvoiceGenerator
                 StreamWriter sw = new StreamWriter("./settings.txt");
 
                 //Name, ABN, Email, Contact No
-                sw.WriteLine(name + "|" 
+                sw.WriteLine(
+                      name + "|" 
                     + ABN + "|" 
                     + email + "|" 
                     + contactNo + "|" 
@@ -338,7 +346,7 @@ namespace InvoiceGenerator
 
             lstJobItems.Add(newItem);
             
-            MessageBox.Show("Entered");
+            //MessageBox.Show("Entered");
 
         }
 
@@ -515,6 +523,20 @@ namespace InvoiceGenerator
                 string temp = txtBillee.Text;
                 string temp01 = temp.Substring(0, 31);
                 txtBillee.Text = temp01;
+            }
+        }
+
+        // Remove item/job from list
+        private void btn_removeItem_Click(object sender, EventArgs e)
+        {
+            if(lbxItems.SelectedIndex > 0)
+            {
+                lbxItems.Items.RemoveAt(lbxItems.SelectedIndex);
+                MessageBox.Show("Item removed at index " + lbxItems.SelectedIndex.ToString());
+            }
+            else
+            {
+                MessageBox.Show("No item in list selected");
             }
         }
     }

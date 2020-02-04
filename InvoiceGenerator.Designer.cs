@@ -59,6 +59,7 @@
             this.txtBilleeAddress01 = new System.Windows.Forms.TextBox();
             this.txtBilleeAddress02 = new System.Windows.Forms.TextBox();
             this.txtBilleeAddress03 = new System.Windows.Forms.TextBox();
+            this.btn_removeItem = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -160,7 +161,7 @@
             // 
             // btnGenerate
             // 
-            this.btnGenerate.Location = new System.Drawing.Point(334, 401);
+            this.btnGenerate.Location = new System.Drawing.Point(469, 405);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(109, 23);
             this.btnGenerate.TabIndex = 14;
@@ -227,7 +228,7 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(163, 218);
+            this.btnAdd.Location = new System.Drawing.Point(94, 208);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(75, 23);
             this.btnAdd.TabIndex = 6;
@@ -320,11 +321,22 @@
             this.txtBilleeAddress03.TabIndex = 13;
             this.txtBilleeAddress03.TextChanged += new System.EventHandler(this.txtBilleeAddress03_TextChanged);
             // 
+            // btn_removeItem
+            // 
+            this.btn_removeItem.Location = new System.Drawing.Point(51, 393);
+            this.btn_removeItem.Name = "btn_removeItem";
+            this.btn_removeItem.Size = new System.Drawing.Size(83, 23);
+            this.btn_removeItem.TabIndex = 28;
+            this.btn_removeItem.Text = "Remove Item";
+            this.btn_removeItem.UseVisualStyleBackColor = true;
+            this.btn_removeItem.Click += new System.EventHandler(this.btn_removeItem_Click);
+            // 
             // InvoiceGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(609, 449);
+            this.Controls.Add(this.btn_removeItem);
             this.Controls.Add(this.txtBilleeAddress03);
             this.Controls.Add(this.txtBilleeAddress02);
             this.Controls.Add(this.txtBilleeAddress01);
@@ -396,6 +408,7 @@
         private System.Windows.Forms.TextBox txtBilleeAddress03;
         private System.Windows.Forms.TextBox txtBilleeAddress02;
         private System.Windows.Forms.TextBox txtBilleeAddress01;
+        private System.Windows.Forms.Button btn_removeItem;
     }
 }
 

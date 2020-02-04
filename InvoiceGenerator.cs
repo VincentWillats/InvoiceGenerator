@@ -6,7 +6,7 @@
  *
  *  History
  *   0.22   04/02/2020
- *          Fixed settings file, will create if not exists
+ //*          Fixed settings file, will create if not exists
  *   0.21   04/02/2020
  *          Updated export filename, added name to cell A1
  *          Removed message box on entry add
@@ -577,6 +577,11 @@ namespace InvoiceGenerator
             {
                 MessageBox.Show("No item in list selected");
             }
+        }
+
+        private void lbxItems_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

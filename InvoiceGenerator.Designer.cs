@@ -225,6 +225,7 @@
             this.lbxItems.Name = "lbxItems";
             this.lbxItems.Size = new System.Drawing.Size(451, 121);
             this.lbxItems.TabIndex = 16;
+            this.lbxItems.SelectedIndexChanged += new System.EventHandler(this.lbxItems_SelectedIndexChanged);
             // 
             // btnAdd
             // 

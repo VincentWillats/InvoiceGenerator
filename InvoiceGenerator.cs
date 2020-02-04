@@ -5,6 +5,8 @@
  *  @version 0.21
  *
  *  History
+ *   0.22   04/02/2020
+ *          Fixed settings file, will create if not exists
  *   0.21   04/02/2020
  *          Updated export filename, added name to cell A1
  *          Removed message box on entry add
@@ -94,34 +96,72 @@ namespace InvoiceGenerator
         // On Form Load
         private void Form1_Load(object sender, EventArgs e)
         {
-            // Opens and reads settings file
-            StreamReader settingsFile;
-            settingsFile = File.OpenText("./settings.txt");
-            string strRead;
-            while ((strRead = settingsFile.ReadLine()) != null)
-            {
-                string[] strTempArr = new string[11];
-                strTempArr = strRead.Split('|');
-                // Personal Details
-                name = strTempArr[0];
-                ABN = strTempArr[1];
-                email = strTempArr[2];
-                contactNo = strTempArr[3];
-                // Address
-                addressArr[0] = strTempArr[4];
-                addressArr[1] = strTempArr[5];
-                addressArr[2] = strTempArr[6];
-                // Bank
-                bankBSB = strTempArr[7];
-                bankAccNo = strTempArr[8];
-                templatePath = strTempArr[9];
-                newFilePath = strTempArr[10];
-            }
-            settingsFile.Close(); // Close settings file
-
+            retriveSettings();
             // Reset/Sets Item Box
             resetItemBox();
 
+        }
+
+        private void retriveSettings()
+        {
+            // Creates if not existse
+            if (!File.Exists("./settings.txt"))
+            {
+                try
+                {
+                    StreamWriter sw = new StreamWriter("./settings.txt");
+
+                    //Writes defaults
+                    sw.WriteLine(
+                          "Default Name" + "|"
+                        + "12345678" + "|"
+                        + "Default@default.com" + "|"
+                        + "012345478" + "|"
+                        + "Address01" + "|"
+                        + "Address02" + "|"
+                        + "Address03" + "|"
+                        + "123412" + "|"
+                        + "123412" + "|"
+                        + "./../../template02.xlsx" + "|"
+                        + "./../../Invoices");
+                    sw.Close();
+                }
+                catch (Exception ea)
+                {
+                    Console.WriteLine("Exception: " + ea.Message);
+                }
+            }
+
+            // Opens and reads settings file            
+            try
+            {
+                StreamReader settingsFile = File.OpenText("./settings.txt");
+                string strRead;
+                while ((strRead = settingsFile.ReadLine()) != null)
+                {
+                    string[] strTempArr = new string[11];
+                    strTempArr = strRead.Split('|');
+                    // Personal Details
+                    name = strTempArr[0];
+                    ABN = strTempArr[1];
+                    email = strTempArr[2];
+                    contactNo = strTempArr[3];
+                    // Address
+                    addressArr[0] = strTempArr[4];
+                    addressArr[1] = strTempArr[5];
+                    addressArr[2] = strTempArr[6];
+                    // Bank
+                    bankBSB = strTempArr[7];
+                    bankAccNo = strTempArr[8];
+                    templatePath = strTempArr[9];
+                    newFilePath = strTempArr[10];
+                }
+                settingsFile.Close(); // Close settings file
+            }
+            catch (Exception ea)
+            {
+                Console.WriteLine("Exception: " + ea.Message);
+            }
         }
 
         // Load Template to workbook
@@ -169,7 +209,7 @@ namespace InvoiceGenerator
             }
             else
             {
-                errorProvider1.SetError(btnGenerate, "Something wrong!");
+                errorProvider1.SetError(btnGenerate, "Invalid prices");
             }
         }
 
@@ -458,7 +498,7 @@ namespace InvoiceGenerator
                 txtItemDesc.Text = temp01;                
             }
         }
-
+        
         // When invoice no changes
         private void txtInvoiceNo_TextChanged(object sender, EventArgs e)
         {

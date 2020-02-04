@@ -14,8 +14,7 @@
  *   0.1    04/12/2019 - Personal Edition
  *          Project started, personal edition made
  *          
-  */
-
+ */
 
 
 using System;
@@ -532,7 +531,7 @@ namespace InvoiceGenerator
             if(lbxItems.SelectedIndex > 0)
             {
                 lbxItems.Items.RemoveAt(lbxItems.SelectedIndex);
-                MessageBox.Show("Item removed at index " + lbxItems.SelectedIndex.ToString());
+                MessageBox.Show("Item removed");
             }
             else
             {
@@ -540,6 +539,4 @@ namespace InvoiceGenerator
             }
         }
     }
-
-
 }

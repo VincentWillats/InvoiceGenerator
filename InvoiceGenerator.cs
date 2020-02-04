@@ -5,6 +5,8 @@
  *  @version 0.21
  *
  *  History
+ *   0.23   04/02/2020
+ *          Added XmlManager and settings class, removed settings being saved in .txt
  *   0.22   04/02/2020
  *          Fixed settings file, will create if not exists
  *   0.21   04/02/2020

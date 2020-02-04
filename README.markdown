@@ -11,10 +11,11 @@ Current 0.21 build - [0.21 Download](https://github.com/VincentWillats/InvoiceGe
 
 1. Run InvoiceGenerator.exe
 2. Set up personal details in the config panel.
-3. Set output folder.
-4. Add up to 8 items to the invoice list.
-5. Add the details of who you're invoicing.
-6. Click Generate and you should get two files in your output folder.
+3. Select the template provided 
+4. Set output folder.
+5. Add up to 8 items to the invoice list.
+6. Add the details of who you're invoicing.
+7. Click Generate and you should get two files in your output folder.
 
 
 

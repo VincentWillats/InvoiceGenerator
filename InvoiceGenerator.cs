@@ -5,6 +5,8 @@
  *  @version 0.21
  *
  *  History
+ *   0.24   05/02/2020
+ *          Moved JobItems into a seperate class
  *   0.23   04/02/2020
  *          Added XmlManager and settings class, removed settings being saved in .txt
  *   0.22   04/02/2020
@@ -40,22 +42,12 @@ namespace InvoiceGenerator
 {
     public partial class InvoiceGenerator : Form
     {
-        internal static Settings settings = new Settings();        
+        internal static Settings settings = new Settings();
+              
+        public object XmlFileManager { get; private set; }
 
-        /** File Paths
-        internal static string templatePath;
-        internal static string newFilePath;
-
-        // Personal Details
-        internal static string name;
-        internal static string ABN;
-        internal static string email;
-        internal static string contactNo;
-        internal static string[] addressArr = new string[3];
-        // Personal Bank Details
-        internal static string bankBSB;
-        internal static string bankAccNo;
-        **/
+        // List of job items
+        List<JobItem> lstJobItems = new List<JobItem>();
 
         // Billee Details
         internal static int invoiceNo;
@@ -64,19 +56,6 @@ namespace InvoiceGenerator
         internal static string billeeName;
         internal static string[] billeeAddress = new string[3];
 
-
-        // Item Details
-        internal struct JobItem
-        {
-            internal string itemDestription;
-            internal DateTime dateOfWork;
-            internal float itemPricePerUnit;
-            internal float itemQuant;
-            internal float itemTotalCost;
-        }
-        // List of job items
-        List<JobItem> lstJobItems = new List<JobItem>();
-
         // Excel document
         ExcelFile workbook;
 
@@ -84,8 +63,7 @@ namespace InvoiceGenerator
         bool validItemPrice = false;
         bool validItemAmount = false;
         bool validTotalPrice = false;
-
-
+        
         // Pay validation
         float amount;
         float payPerItem;
@@ -97,15 +75,12 @@ namespace InvoiceGenerator
         {
             InitializeComponent();
         }
-
-        public object XmlFileManager { get; private set; }
+                
         // On Form Load
         private void Form1_Load(object sender, EventArgs e)
         {
-            retriveSettings();
-            // Reset/Sets Item Box
+            retriveSettings();            
             resetItemBox();
-
         }
 
         private void retriveSettings()
@@ -212,12 +187,12 @@ namespace InvoiceGenerator
                 double totalCost = 0;
                 foreach (JobItem item in lstJobItems)
                 {
-                    totalCost += item.itemTotalCost;
-                    workbook.Worksheets[0].Cells["A" + cell.ToString()].Value = item.itemDestription;
-                    workbook.Worksheets[0].Cells["D" + cell.ToString()].Value = item.dateOfWork.ToString("d");
-                    workbook.Worksheets[0].Cells["E" + cell.ToString()].Value = item.itemPricePerUnit;
-                    workbook.Worksheets[0].Cells["G" + cell.ToString()].Value = item.itemQuant.ToString();
-                    workbook.Worksheets[0].Cells["H" + cell.ToString()].Value = item.itemTotalCost;
+                    totalCost += item.ItemTotalCost;
+                    workbook.Worksheets[0].Cells["A" + cell.ToString()].Value = item.ItemDescription;
+                    workbook.Worksheets[0].Cells["D" + cell.ToString()].Value = item.DateOfWork.ToString("d");
+                    workbook.Worksheets[0].Cells["E" + cell.ToString()].Value = item.ItemPricePerUnit;
+                    workbook.Worksheets[0].Cells["G" + cell.ToString()].Value = item.ItemQuant.ToString();
+                    workbook.Worksheets[0].Cells["H" + cell.ToString()].Value = item.ItemTotalCost;
                     cell += 1;
                 }
 
@@ -303,20 +278,20 @@ namespace InvoiceGenerator
         {
             JobItem newItem = new JobItem();
 
-            newItem.itemDestription = txtItemDesc.Text;        
-            newItem.dateOfWork = dtpItemDate.Value;
-            newItem.itemPricePerUnit = float.Parse(txtItemPrice.Text);
-            newItem.itemQuant = float.Parse(txtItemAmount.Text);
-            newItem.itemTotalCost = float.Parse(txtItemTotalPrice.Text);
+            newItem.ItemDescription = txtItemDesc.Text;        
+            newItem.DateOfWork = dtpItemDate.Value;
+            newItem.ItemPricePerUnit = float.Parse(txtItemPrice.Text);
+            newItem.ItemQuant = float.Parse(txtItemAmount.Text);
+            newItem.ItemTotalCost = float.Parse(txtItemTotalPrice.Text);
 
-            string temp = newItem.itemDestription;
+            string temp = newItem.ItemDescription;
             int tempInt = 32 - (temp.Length);
             for(;tempInt > 0; tempInt--)
             {
                 temp = temp + " ";
             }
 
-            lbxItems.Items.Add(temp + "\t" + newItem.dateOfWork.ToString("d") + "\t" + newItem.itemPricePerUnit.ToString() + "\t\t" + newItem.itemQuant.ToString() + "\t" + newItem.itemTotalCost.ToString());
+            lbxItems.Items.Add(temp + "\t" + newItem.DateOfWork.ToString("d") + "\t" + newItem.ItemPricePerUnit.ToString() + "\t\t" + newItem.ItemQuant.ToString() + "\t" + newItem.ItemTotalCost.ToString());
 
             lstJobItems.Add(newItem);
             

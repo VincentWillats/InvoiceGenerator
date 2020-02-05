@@ -5,7 +5,7 @@ Create and build and invoice and export in .xlsx and .pdf
 
 #### Download ####
 
-Current 0.21 build - [0.21 Download](https://github.com/VincentWillats/InvoiceGenerator/releases/tag/0.21)
+Current 0.23 build - [0.23 Download](https://github.com/VincentWillats/InvoiceGenerator/releases/tag/0.23)
 
 #### Usage / Instructions ####
 

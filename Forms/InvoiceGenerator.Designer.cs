@@ -60,6 +60,7 @@
             this.txtBilleeAddress02 = new System.Windows.Forms.TextBox();
             this.txtBilleeAddress03 = new System.Windows.Forms.TextBox();
             this.btn_removeItem = new System.Windows.Forms.Button();
+            this.lblSettings = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -225,7 +226,6 @@
             this.lbxItems.Name = "lbxItems";
             this.lbxItems.Size = new System.Drawing.Size(451, 121);
             this.lbxItems.TabIndex = 16;
-            this.lbxItems.SelectedIndexChanged += new System.EventHandler(this.lbxItems_SelectedIndexChanged);
             // 
             // btnAdd
             // 
@@ -332,11 +332,20 @@
             this.btn_removeItem.UseVisualStyleBackColor = true;
             this.btn_removeItem.Click += new System.EventHandler(this.btn_removeItem_Click);
             // 
+            // lblSettings
+            // 
+            this.lblSettings.AutoSize = true;
+            this.lblSettings.Location = new System.Drawing.Point(514, 38);
+            this.lblSettings.Name = "lblSettings";
+            this.lblSettings.Size = new System.Drawing.Size(0, 13);
+            this.lblSettings.TabIndex = 29;
+            // 
             // InvoiceGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(609, 449);
+            this.Controls.Add(this.lblSettings);
             this.Controls.Add(this.btn_removeItem);
             this.Controls.Add(this.txtBilleeAddress03);
             this.Controls.Add(this.txtBilleeAddress02);
@@ -369,7 +378,6 @@
             this.Controls.Add(this.label1);
             this.Name = "InvoiceGenerator";
             this.Text = "Invoice Generator";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider1)).EndInit();
             this.ResumeLayout(false);
@@ -410,6 +418,7 @@
         private System.Windows.Forms.TextBox txtBilleeAddress02;
         private System.Windows.Forms.TextBox txtBilleeAddress01;
         private System.Windows.Forms.Button btn_removeItem;
+        private System.Windows.Forms.Label lblSettings;
     }
 }
 

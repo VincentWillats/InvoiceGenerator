@@ -5,6 +5,9 @@
  *  @version 0.21
  *
  *  History
+ *   0.25   11/02/2020
+ *          Move Busisness logic to Functions class/out of UI
+ *          Added BackgroundWorker for loading settings
  *   0.24   05/02/2020
  *          Moved JobItems into a seperate class
  *   0.23   04/02/2020
@@ -43,7 +46,10 @@ namespace InvoiceGenerator
     public partial class InvoiceGenerator : Form
     {
         internal static Settings settings = new Settings();
-              
+        internal static Functions functions = new Functions();
+
+        BackgroundWorker bg_worker;
+
         public object XmlFileManager { get; private set; }
 
         // List of job items
@@ -55,9 +61,6 @@ namespace InvoiceGenerator
         internal static bool paid;
         internal static string billeeName;
         internal static string[] billeeAddress = new string[3];
-
-        // Excel document
-        ExcelFile workbook;
 
         // Entry validation
         bool validItemPrice = false;
@@ -74,41 +77,39 @@ namespace InvoiceGenerator
         public InvoiceGenerator()
         {
             InitializeComponent();
+
+            bg_worker = new BackgroundWorker();
+            bg_worker.DoWork += new DoWorkEventHandler(bg_worker_DoWork);
+            bg_worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bg_worker_RunWorkerCompleted);
+            bg_worker.WorkerSupportsCancellation = false;
         }
-                
+
+        // When settings finished loaded comfirm or give error
+        void bg_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if(e.Error != null)
+            {
+                lblSettings.Text = "Error";
+                MessageBox.Show("Error loading settings: " + e.ToString());
+            }
+            else
+            {
+                lblSettings.Text = "Settings Loaded";
+            }
+        }
+
+        // Load settings
+        void bg_worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            settings = functions.retriveSettings("settings.xml");
+        }
+     
         // On Form Load
         private void Form1_Load(object sender, EventArgs e)
         {
-            retriveSettings();            
+            bg_worker.RunWorkerAsync();                            
             resetItemBox();
-        }
-
-        private void retriveSettings()
-        {
-            if (File.Exists("settings.xml"))
-            {
-                settings = XmlManager.XmlSettingsReader("settings.xml");
-            }            
-        }
-
-        // Load Template to workbook
-        private void loadTemplate()
-        {
-            try
-            {
-                // Sets license to free limited, max 150 rows
-                SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
-                SpreadsheetInfo.FreeLimitReached += (sender, e) => e.FreeLimitReachedAction = FreeLimitReachedAction.ContinueAsTrial;
-
-                // Opens the template
-                using (Stream input = File.OpenRead(settings.TemplatePath))
-                    workbook = ExcelFile.Load(input, LoadOptions.XlsxDefault);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
+        }        
 
         // On generate click, generate the .xlsx and .pdf if inputs valid
         private void BtnGenerate_Click(object sender, EventArgs e)
@@ -126,7 +127,10 @@ namespace InvoiceGenerator
             if (validItemAmount && validItemPrice && validTotalPrice)
             {
                 errorProvider1.Dispose();
-                saveFile();
+                functions.saveFile(settings.TemplatePath, settings.NewFilePath, settings.Name, invoiceNo, invoiceDate,
+                                    settings.ABN, settings.Email, settings.ContactNo, settings.Address01, settings.Address02,
+                                    settings.Address03, settings.BankBSB, settings.BankAccNo, billeeName, billeeAddress, paid, lstJobItems);
+                txtInvoiceNo.Text = (invoiceNo + 1).ToString();
                 resetItemBox();
                 lstJobItems.Clear();
                 txtItemDesc.Clear();
@@ -139,102 +143,7 @@ namespace InvoiceGenerator
                 errorProvider1.SetError(btnGenerate, "Invalid prices");
             }
         }
-
-        // Adding details into workbook and saving it
-        private void saveFile()
-        {
-            loadTemplate();
-
-            try
-            {
-                string newFilePathTotal = settings.NewFilePath + "/" + Regex.Replace(settings.Name, @"\s+", "") + "Invoice_InvoiceNo-" + invoiceNo.ToString() + "_" + invoiceDate.ToString("dd-MM-yyyy") + ".xlsx";
-
-                // Setting values
-
-                // Personal Details
-                workbook.Worksheets[0].Cells["A1"].Value = settings.Name;
-                workbook.Worksheets[0].Cells["A4"].Value = settings.ABN;
-                workbook.Worksheets[0].Cells["A6"].Value = settings.Email;
-                workbook.Worksheets[0].Cells["A8"].Value = settings.ContactNo;
-                workbook.Worksheets[0].Cells["A10"].Value = settings.Address01;
-                workbook.Worksheets[0].Cells["A11"].Value = settings.Address02;
-                workbook.Worksheets[0].Cells["A12"].Value = settings.Address03;
-                // Personal Bank Details
-                workbook.Worksheets[0].Cells["B14"].Value = settings.BankBSB;
-                workbook.Worksheets[0].Cells["B15"].Value = settings.BankAccNo;
-
-                // Set Invoice Details
-                workbook.Worksheets[0].Cells["H4"].Value = invoiceDate.ToString("d");
-                workbook.Worksheets[0].Cells["H6"].Value = invoiceNo;
-                workbook.Worksheets[0].Cells["F9"].Value = billeeName;
-                workbook.Worksheets[0].Cells["F12"].Value = billeeAddress[0];
-                workbook.Worksheets[0].Cells["F13"].Value = billeeAddress[1];
-                workbook.Worksheets[0].Cells["F14"].Value = billeeAddress[2];
-
-                // If paid
-                if (paid)
-                {
-                    workbook.Worksheets[0].Cells["B32"].Value = "PAID";
-                }
-                else
-                {
-                    workbook.Worksheets[0].Cells["B32"].Value = "";
-                }
-
-                // Job Details
-
-                int cell = 21;
-                double totalCost = 0;
-                foreach (JobItem item in lstJobItems)
-                {
-                    totalCost += item.ItemTotalCost;
-                    workbook.Worksheets[0].Cells["A" + cell.ToString()].Value = item.ItemDescription;
-                    workbook.Worksheets[0].Cells["D" + cell.ToString()].Value = item.DateOfWork.ToString("d");
-                    workbook.Worksheets[0].Cells["E" + cell.ToString()].Value = item.ItemPricePerUnit;
-                    workbook.Worksheets[0].Cells["G" + cell.ToString()].Value = item.ItemQuant.ToString();
-                    workbook.Worksheets[0].Cells["H" + cell.ToString()].Value = item.ItemTotalCost;
-                    cell += 1;
-                }
-
-                workbook.Worksheets[0].Cells["H29"].Value = totalCost;
-
-
-                invoiceNo += 1;
-                txtInvoiceNo.Text = invoiceNo.ToString();
-
-                using (FileStream output = File.Create(newFilePathTotal))
-                    workbook.Save(output, SaveOptions.XlsxDefault);
-                SaveAsPdf(newFilePathTotal);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }        
-
-        }
-
-        // Saving workbook as pdf
-        private void SaveAsPdf(string saveAsLocation)
-        {
-            string saveas = (saveAsLocation.Split('x')[0]) + "pdf";
-            try
-            {
-                ExcelFile ef = ExcelFile.Load(saveAsLocation);
-                ef.Save(saveas);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        // On Form close save config details
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-        
-        }
-        
-
+               
         // Open Config Form
         private void BtnConfig_Click(object sender, EventArgs e)
         {
@@ -259,7 +168,7 @@ namespace InvoiceGenerator
                 // Checks no more than 8 items
                 if(lstJobItems.Count < 8)
                 {
-                    addItemToList();
+                    addItemToListboxAndList();
                 }
                 else
                 {
@@ -273,30 +182,15 @@ namespace InvoiceGenerator
         }
 
         // Adds items to lstJobItems and ListBox
-        private void addItemToList()
+        private void addItemToListboxAndList()
 
         {
-            JobItem newItem = new JobItem();
-
-            newItem.ItemDescription = txtItemDesc.Text;        
-            newItem.DateOfWork = dtpItemDate.Value;
-            newItem.ItemPricePerUnit = float.Parse(txtItemPrice.Text);
-            newItem.ItemQuant = float.Parse(txtItemAmount.Text);
-            newItem.ItemTotalCost = float.Parse(txtItemTotalPrice.Text);
-
-            string temp = newItem.ItemDescription;
-            int tempInt = 32 - (temp.Length);
-            for(;tempInt > 0; tempInt--)
-            {
-                temp = temp + " ";
-            }
-
-            lbxItems.Items.Add(temp + "\t" + newItem.DateOfWork.ToString("d") + "\t" + newItem.ItemPricePerUnit.ToString() + "\t\t" + newItem.ItemQuant.ToString() + "\t" + newItem.ItemTotalCost.ToString());
-
+            // Create item
+            JobItem newItem = new JobItem(txtItemDesc.Text, dtpItemDate.Value, float.Parse(txtItemPrice.Text), float.Parse(txtItemAmount.Text), float.Parse(txtItemTotalPrice.Text)); 
+            // Add detils to list box
+            lbxItems.Items.Add(newItem.Details);
+            // Add item to list.
             lstJobItems.Add(newItem);
-            
-            //MessageBox.Show("Entered");
-
         }
 
         // When unit price changes
@@ -480,7 +374,8 @@ namespace InvoiceGenerator
         {
             if(lbxItems.SelectedIndex > 0)
             {
-                lbxItems.Items.RemoveAt(lbxItems.SelectedIndex);
+                lstJobItems.RemoveAt(lbxItems.SelectedIndex - 1);
+                lbxItems.Items.RemoveAt(lbxItems.SelectedIndex);                
                 MessageBox.Show("Item removed");
             }
             else
@@ -488,10 +383,6 @@ namespace InvoiceGenerator
                 MessageBox.Show("No item in list selected");
             }
         }
-
-        private void lbxItems_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
+           
     }
 }

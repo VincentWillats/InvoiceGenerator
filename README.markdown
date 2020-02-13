@@ -1,6 +1,6 @@
 #### Invoice Generator #### 
 
-Create and build and invoice and export in .xlsx and .pdf
+Create and build an invoice and export in .xlsx and .pdf
 
 
 #### Download ####

@@ -12,6 +12,7 @@ namespace InvoiceGenerator
 {
     public class Functions
     {
+        Template template = new Template();
 
         // Retrive the settings file
         public Settings retriveSettings(string settingsFile)
@@ -20,17 +21,23 @@ namespace InvoiceGenerator
             {
                 return XmlManager.XmlSettingsReader(settingsFile);
             }
-
-            return null;
+            else
+            {    
+                return null;
+            }
+           
         }
 
         // Save Excel file
-        public void saveFile(string templatePath, string savePath, string name, int invoiceNo, DateTime invoiceDate,
+        public void saveFile(string savePath, string name, int invoiceNo, DateTime invoiceDate,
                                 string ABN, string Email, string ContactNo, string Address01, string Address02, string Address03,
                                 string BankBSB, string BankAccNo, string billeeName, string[] billeeAddress, bool paid, List<JobItem> lstJobItems)
         {
             ExcelFile workbook;
-            workbook = loadTemplate(templatePath);
+            workbook = loadTemplate();
+            var worksheet = workbook.Worksheets.Add("New Sheet");
+            template.setTemplateFormat(1, ref workbook);
+            
 
             try
             {
@@ -51,12 +58,12 @@ namespace InvoiceGenerator
                 workbook.Worksheets[0].Cells["B15"].Value = BankAccNo;
 
                 // Set Invoice Details
-                workbook.Worksheets[0].Cells["H4"].Value = invoiceDate.ToString("d");
-                workbook.Worksheets[0].Cells["H6"].Value = invoiceNo;
-                workbook.Worksheets[0].Cells["F9"].Value = billeeName;
-                workbook.Worksheets[0].Cells["F12"].Value = billeeAddress[0];
-                workbook.Worksheets[0].Cells["F13"].Value = billeeAddress[1];
-                workbook.Worksheets[0].Cells["F14"].Value = billeeAddress[2];
+                workbook.Worksheets[0].Cells["G4"].Value = invoiceDate.ToString("d");
+                workbook.Worksheets[0].Cells["G6"].Value = invoiceNo;
+                workbook.Worksheets[0].Cells["G9"].Value = billeeName;
+                workbook.Worksheets[0].Cells["G12"].Value = billeeAddress[0];
+                workbook.Worksheets[0].Cells["G13"].Value = billeeAddress[1];
+                workbook.Worksheets[0].Cells["G14"].Value = billeeAddress[2];
 
                 // If paid
                 if (paid)
@@ -78,12 +85,12 @@ namespace InvoiceGenerator
                     workbook.Worksheets[0].Cells["A" + cell.ToString()].Value = item.ItemDescription;
                     workbook.Worksheets[0].Cells["D" + cell.ToString()].Value = item.DateOfWork.ToString("d");
                     workbook.Worksheets[0].Cells["E" + cell.ToString()].Value = item.ItemPricePerUnit;
-                    workbook.Worksheets[0].Cells["G" + cell.ToString()].Value = item.ItemQuant.ToString();
-                    workbook.Worksheets[0].Cells["H" + cell.ToString()].Value = item.ItemTotalCost;
+                    workbook.Worksheets[0].Cells["F" + cell.ToString()].Value = item.ItemQuant.ToString();
+                    workbook.Worksheets[0].Cells["G" + cell.ToString()].Value = item.ItemTotalCost;
                     cell += 1;
                 }
 
-                workbook.Worksheets[0].Cells["H29"].Value = totalCost;
+                workbook.Worksheets[0].Cells["G29"].Value = totalCost;
 
 
                 //invoiceNo += 1;
@@ -95,7 +102,7 @@ namespace InvoiceGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Error in writing saveFile(): " + ex.Message);
             }
 
         }
@@ -116,7 +123,7 @@ namespace InvoiceGenerator
         }
 
         // load the template to a var
-        public ExcelFile loadTemplate(string templatePath)
+        public ExcelFile loadTemplate()
         {            
             try
             {
@@ -124,10 +131,8 @@ namespace InvoiceGenerator
                 SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
                 SpreadsheetInfo.FreeLimitReached += (sender, e) => e.FreeLimitReachedAction = FreeLimitReachedAction.ContinueAsTrial;
 
-                // Opens the template
-                using (Stream input = File.OpenRead(templatePath))
-                    return ExcelFile.Load(input, LoadOptions.XlsxDefault);
-               
+                // Opens the template              
+                return new ExcelFile();               
             }
             catch (Exception ex)
             {

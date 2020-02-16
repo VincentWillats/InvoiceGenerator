@@ -5,6 +5,8 @@
  *  @version 0.21
  *
  *  History
+ *   0.26   16/02/2020
+ *          Removed need for template file
  *   0.25   11/02/2020
  *          Move Busisness logic to Functions class/out of UI
  *          Added BackgroundWorker for loading settings
@@ -101,7 +103,14 @@ namespace InvoiceGenerator
         // Load settings
         void bg_worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            settings = functions.retriveSettings("settings.xml");
+            if (functions.retriveSettings("settings.xml") == null)
+            {
+                return;
+            }
+            else 
+            { 
+                settings = functions.retriveSettings("settings.xml"); 
+            }
         }
      
         // On Form Load
@@ -127,7 +136,7 @@ namespace InvoiceGenerator
             if (validItemAmount && validItemPrice && validTotalPrice)
             {
                 errorProvider1.Dispose();
-                functions.saveFile(settings.TemplatePath, settings.NewFilePath, settings.Name, invoiceNo, invoiceDate,
+                functions.saveFile(settings.NewFilePath, settings.Name, invoiceNo, invoiceDate,
                                     settings.ABN, settings.Email, settings.ContactNo, settings.Address01, settings.Address02,
                                     settings.Address03, settings.BankBSB, settings.BankAccNo, billeeName, billeeAddress, paid, lstJobItems);
                 txtInvoiceNo.Text = (invoiceNo + 1).ToString();
@@ -135,6 +144,7 @@ namespace InvoiceGenerator
                 lstJobItems.Clear();
                 txtItemDesc.Clear();
                 txtItemPrice.Clear();
+                txtItemAmount.Clear();
                 txtItemAmount.Clear();
                 txtItemTotalPrice.Clear();
             }
@@ -294,11 +304,11 @@ namespace InvoiceGenerator
         // When description changes
         private void txtItemDesc_TextChanged(object sender, EventArgs e)
         {
-            if(txtItemDesc.Text.Length > 22)
+            if(txtItemDesc.Text.Length > 28)
             {
-                errorProvider1.SetError(txtItemDesc, "Max 22 Chars");
+                errorProvider1.SetError(txtItemDesc, "Max 28 Chars");
                 string temp = txtItemDesc.Text;
-                string temp01 = temp.Substring(0, 21);
+                string temp01 = temp.Substring(0, 27);
                 txtItemDesc.Text = temp01;                
             }
         }

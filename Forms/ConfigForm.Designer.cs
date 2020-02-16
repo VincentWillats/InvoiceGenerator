@@ -52,8 +52,6 @@
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.btnSelectTemplatePath = new System.Windows.Forms.Button();
-            this.txtTemplatePath = new System.Windows.Forms.TextBox();
             this.btnSelectOutput = new System.Windows.Forms.Button();
             this.txtSavePath = new System.Windows.Forms.TextBox();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
@@ -247,27 +245,9 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // btnSelectTemplatePath
-            // 
-            this.btnSelectTemplatePath.Location = new System.Drawing.Point(336, 11);
-            this.btnSelectTemplatePath.Name = "btnSelectTemplatePath";
-            this.btnSelectTemplatePath.Size = new System.Drawing.Size(121, 23);
-            this.btnSelectTemplatePath.TabIndex = 22;
-            this.btnSelectTemplatePath.Text = "Select Template Path";
-            this.btnSelectTemplatePath.UseVisualStyleBackColor = true;
-            this.btnSelectTemplatePath.Click += new System.EventHandler(this.Button1_Click);
-            // 
-            // txtTemplatePath
-            // 
-            this.txtTemplatePath.Location = new System.Drawing.Point(290, 37);
-            this.txtTemplatePath.Name = "txtTemplatePath";
-            this.txtTemplatePath.ReadOnly = true;
-            this.txtTemplatePath.Size = new System.Drawing.Size(219, 20);
-            this.txtTemplatePath.TabIndex = 23;
-            // 
             // btnSelectOutput
             // 
-            this.btnSelectOutput.Location = new System.Drawing.Point(336, 62);
+            this.btnSelectOutput.Location = new System.Drawing.Point(340, 26);
             this.btnSelectOutput.Name = "btnSelectOutput";
             this.btnSelectOutput.Size = new System.Drawing.Size(121, 23);
             this.btnSelectOutput.TabIndex = 24;
@@ -277,7 +257,7 @@
             // 
             // txtSavePath
             // 
-            this.txtSavePath.Location = new System.Drawing.Point(290, 88);
+            this.txtSavePath.Location = new System.Drawing.Point(294, 52);
             this.txtSavePath.Name = "txtSavePath";
             this.txtSavePath.ReadOnly = true;
             this.txtSavePath.Size = new System.Drawing.Size(219, 20);
@@ -294,8 +274,6 @@
             this.ClientSize = new System.Drawing.Size(526, 303);
             this.Controls.Add(this.txtSavePath);
             this.Controls.Add(this.btnSelectOutput);
-            this.Controls.Add(this.txtTemplatePath);
-            this.Controls.Add(this.btnSelectTemplatePath);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.txtBankNo);
@@ -352,8 +330,6 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.Button btnSelectTemplatePath;
-        private System.Windows.Forms.TextBox txtTemplatePath;
         private System.Windows.Forms.Button btnSelectOutput;
         private System.Windows.Forms.TextBox txtSavePath;
         private System.Windows.Forms.ErrorProvider errorProvider1;

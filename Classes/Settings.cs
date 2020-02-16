@@ -74,14 +74,7 @@ namespace InvoiceGenerator
             set { _bankAccNo = value; }
         }
 
-        // File settings
-        private string _templatePath;
-        public string TemplatePath
-        {
-            get { return _templatePath; }
-            set { _templatePath = value; }
-        }
-
+        // File settings        
 
         private string _newFilePath;
         public string NewFilePath

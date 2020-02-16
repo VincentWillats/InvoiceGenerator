@@ -5,17 +5,16 @@ Create and build an invoice and export in .xlsx and .pdf
 
 #### Download ####
 
-0.23 build - [0.23 Download](https://github.com/VincentWillats/InvoiceGenerator/releases/tag/0.23)
+0.26 build - [0.26 Download](https://github.com/VincentWillats/InvoiceGenerator/releases/edit/0.23)
 
 #### Usage / Instructions ####
 
 1. Run InvoiceGenerator.exe
 2. Set up personal details in the config panel.
-3. Select the template provided 
-4. Set output folder.
-5. Add up to 8 items to the invoice list.
-6. Add the details of who you're invoicing.
-7. Click Generate and you should get two files in your output folder.
+3. Set output folder.
+4. Add up to 8 items to the invoice list.
+5. Add the details of who you're invoicing.
+6. Click Generate and you should get two files in your output folder.
 
 
 
@@ -25,12 +24,16 @@ I would love any and all feedback, this is the first thing I have self made so I
 
 
 
-#### Currently in work ####
+#### Current Works in progress ####
 
-Moving away from needing a template file and creating the file from scratch
+Various bug fixes
+Add multiple templates
+Add text entry rememberance
 
 #### Update History ####
       
+    0.26   16/02/2020
+           Removed need for template file
     0.25   11/02/2020
            Move Busisness logic to Functions class/out of UI
            Added BackgroundWorker for loading settings
